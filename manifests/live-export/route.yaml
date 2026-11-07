@@ -1,0 +1,32 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    openshift.io/host.generated: "true"
+  creationTimestamp: "2026-11-07T18:21:25Z"
+  generation: 1
+  labels:
+    app: poc-web
+  name: poc-web
+  namespace: muse-poc
+  resourceVersion: "2195190"
+  uid: 4c2f64db-3475-448d-ae1a-0423e03c7592
+spec:
+  host: poc-web-muse-poc.apps-crc.testing
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: poc-web
+    weight: 100
+  wildcardPolicy: None
+status:
+  ingress:
+  - conditions:
+    - lastTransitionTime: "2026-11-07T18:21:25Z"
+      status: "True"
+      type: Admitted
+    host: poc-web-muse-poc.apps-crc.testing
+    routerCanonicalHostname: router-default.apps-crc.testing
+    routerName: default
+    wildcardPolicy: None

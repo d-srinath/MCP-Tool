@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: poc-web-content
+  namespace: muse-poc
+  labels:
+    app: poc-web
+data:
+  index.html: |
+    <!doctype html><html><head><title>Muse POC</title></head><body><h1>Muse OpenShift POC works</h1><p>Deployed by Muse via SSH on Srinath MacBook CRC cluster.</p></body></html>

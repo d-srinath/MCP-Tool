@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: poc-web
+  namespace: muse-poc
+  labels:
+    app: poc-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: poc-web
+  template:
+    metadata:
+      labels:
+        app: poc-web
+    spec:
+      containers:
+        - name: httpd
+          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: content
+              mountPath: /var/www/html
+      volumes:
+        - name: content
+          configMap:
+            name: poc-web-content

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+  creationTimestamp: "2026-11-07T18:21:24Z"
+  generation: 4
+  labels:
+    app: poc-web
+  name: poc-web
+  namespace: muse-poc
+  resourceVersion: "2195407"
+  uid: 0a69cabb-d61e-4c14-89e9-c01f1031903a
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: poc-web
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: poc-web
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
+        imagePullPolicy: IfNotPresent
+        name: httpd
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/www/html
+          name: content
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: poc-web-content
+        name: content
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2026-11-07T18:21:55Z"
+    lastUpdateTime: "2026-11-07T18:21:55Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-11-07T18:21:24Z"
+    lastUpdateTime: "2026-11-07T18:22:08Z"
+    message: ReplicaSet "poc-web-75db5bc47d" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 4
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2
