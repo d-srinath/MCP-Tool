@@ -1,9 +1,14 @@
 # MCP permission-testing projects (created 2026-11-08 at Srinath's request).
-# Two projects, three sample apps each, two replicas per app — used to test
-# admin vs developer visibility/actions through the Paas Portal:
-#   admin (cluster-admin) sees and can act in both projects;
-#   developers have no binding here, so they see neither project
-#   (their only project is `dev`, view-only).
+# Three projects, three sample apps each, two replicas per app — used to
+# test admin vs developer visibility/actions through the Paas Portal:
+#   admin (cluster-admin) sees and can act in all projects;
+#   each developer is assigned ONE testing project with the `view` role
+#   (per-user RoleBindings at the bottom of this file):
+#     testdeveloper1 -> mcp-testing-1
+#     testdeveloper2 -> mcp-testing-2
+#     testdeveloper3 -> mcp-testing-3
+#   so each developer's project list is exactly: dev, plus their own
+#   testing project. (The developers group also has view on `dev`.)
 # Image is the same httpd sample used for dev/sample — it is already
 # present in the cluster's `openshift` imagestreams.
 ---
@@ -18,6 +23,13 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: mcp-testing-2
+  labels:
+    paas-portal/testing: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mcp-testing-3
   labels:
     paas-portal/testing: "true"
 # --- mcp-testing-1: app1, app2, app3 (2 replicas each) ---
@@ -160,3 +172,116 @@ spec:
           image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
           ports:
             - containerPort: 8080
+# --- mcp-testing-3: app1, app2, app3 (2 replicas each) ---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  namespace: mcp-testing-3
+  labels:
+    app: app1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      containers:
+        - name: httpd
+          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2
+  namespace: mcp-testing-3
+  labels:
+    app: app2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app2
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      containers:
+        - name: httpd
+          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app3
+  namespace: mcp-testing-3
+  labels:
+    app: app3
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app3
+  template:
+    metadata:
+      labels:
+        app: app3
+    spec:
+      containers:
+        - name: httpd
+          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:2.4-ubi9
+          ports:
+            - containerPort: 8080
+# --- Per-developer assignments: view role for one user per project ---
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view-testdeveloper1
+  namespace: mcp-testing-1
+subjects:
+  - kind: User
+    name: testdeveloper1
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view-testdeveloper2
+  namespace: mcp-testing-2
+subjects:
+  - kind: User
+    name: testdeveloper2
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: view-testdeveloper3
+  namespace: mcp-testing-3
+subjects:
+  - kind: User
+    name: testdeveloper3
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: view
+  apiGroup: rbac.authorization.k8s.io
