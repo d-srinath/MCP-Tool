@@ -183,7 +183,8 @@ func routeInner(text, cluster string) (chatReply, error) {
 const pageHTML = `<!doctype html><html><head><meta charset="utf-8"><title>Paas Portal</title>
 <style>
 body{font-family:-apple-system,Helvetica,Arial,sans-serif;margin:0;background:#f4f5f7;color:#1b1e23}
-header{background:#15181d;color:#fff;padding:18px 28px} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;color:#9ba1a9;font-size:13px}
+header{background:#15181d;color:#fff;padding:18px 28px;display:flex;justify-content:space-between;align-items:flex-start} header h1{margin:0;font-size:20px} header p{margin:4px 0 0;color:#9ba1a9;font-size:13px}
+.badge{border:1px solid #4a4f57;border-radius:999px;padding:5px 12px;font-size:12px;color:#e6e8eb;white-space:nowrap;margin-top:2px}
 .wrap{max-width:880px;margin:24px auto;padding:0 16px}
 #chat{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:18px}
 #log{height:300px;overflow:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
@@ -193,7 +194,7 @@ header{background:#15181d;color:#fff;padding:18px 28px} header h1{margin:0;font-
 form{display:flex;gap:8px} input{flex:1;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:14px}
 button{padding:11px 18px;border:0;border-radius:8px;background:#c00;color:#fff;font-size:14px;cursor:pointer}
 </style></head><body>
-<header><h1>Welcome to Paas Portal</h1><p>Answers come from the MCP server's tools.</p></header>
+<header><div><h1>Welcome to Paas Portal</h1><p>Answers come from the MCP server's tools.</p></div><div class="badge">MCP Paas Tool</div></header>
 <div class="wrap">
 <div id="chat"><div id="log"></div>
 <form id="f"><input id="i" placeholder="Try: list clusters — or — connect me to sandbox cluster" autocomplete="off"><button>Send</button></form>
