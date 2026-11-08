@@ -536,7 +536,9 @@ document.getElementById('f').addEventListener('submit', async e => {
   add(text,'me'); inp.value=''; add('Working on it…','bot'); const pending=document.querySelector('#log .bot:last-child');
   const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text})});
   const data = await r.json(); pending.textContent = data.reply;
-  if (data.action_url){ window.open(data.action_url, '_blank'); const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
+  // Action = a button the user clicks (e.g. 'Sign in to sandbox'). Never
+  // auto-open it: navigation happens only on the click (Srinath, 2026-11-08).
+  if (data.action_url){ const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
 });
 add('Hello! Welcome to Paas Portal. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');
 fetch('/api/me').then(r=>r.json()).then(me=>{ if(me.signed_in){ document.getElementById('userbox').innerHTML = me.username + ' · <a href="/auth/logout">Sign out</a>'; add('Signed in as '+me.username+'. You can ask me to list namespaces, list deployments, restart a deployment, and more.','bot'); } }).catch(()=>{});
