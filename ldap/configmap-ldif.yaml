@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openldap-bootstrap
+  namespace: ldap
+data:
+  01-structure.ldif: |
+    dn: ou=people,dc=platform,dc=local
+    objectClass: organizationalUnit
+    ou: people
+
+    dn: ou=groups,dc=platform,dc=local
+    objectClass: organizationalUnit
+    ou: groups
+  02-users.ldif: |
+    dn: uid=srinath,ou=people,dc=platform,dc=local
+    objectClass: inetOrgPerson
+    uid: srinath
+    cn: Srinath Damacharla
+    sn: Damacharla
+    mail: srinath@platform.local
+    userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+    dn: uid=dev1,ou=people,dc=platform,dc=local
+    objectClass: inetOrgPerson
+    uid: dev1
+    cn: Dev One
+    sn: One
+    mail: dev1@platform.local
+    userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+  03-groups.ldif: |
+    dn: cn=admins,ou=groups,dc=platform,dc=local
+    objectClass: groupOfNames
+    cn: admins
+    description: Platform administrators
+    member: uid=srinath,ou=people,dc=platform,dc=local
+
+    dn: cn=developers,ou=groups,dc=platform,dc=local
+    objectClass: groupOfNames
+    cn: developers
+    description: Application developers
+    member: uid=dev1,ou=people,dc=platform,dc=local

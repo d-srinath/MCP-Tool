@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap
+  namespace: ldap
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: openldap
+  template:
+    metadata:
+      labels:
+        app: openldap
+    spec:
+      containers:
+        - name: openldap
+          image: docker.io/osixia/openldap:1.5.0
+          args: ["--copy-service"]
+          ports:
+            - containerPort: 389
+              name: ldap
+          env:
+            - name: LDAP_ORGANISATION
+              value: "Platform"
+            - name: LDAP_DOMAIN
+              value: "platform.local"
+            - name: LDAP_BASE_DN
+              value: "dc=platform,dc=local"
+            - name: LDAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openldap-admin
+                  key: LDAP_ADMIN_PASSWORD
+            - name: LDAP_CONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openldap-admin
+                  key: LDAP_CONFIG_PASSWORD
+            - name: LDAP_RFC2307BIS_SCHEMA
+              value: "false"
+            - name: LDAP_TLS
+              value: "false"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              memory: "512Mi"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/ldap
+              subPath: data
+            - name: data
+              mountPath: /etc/ldap/slapd.d
+              subPath: config
+            - name: bootstrap
+              mountPath: /container/service/slapd/assets/config/bootstrap/ldif/custom
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: openldap-data
+        - name: bootstrap
+          configMap:
+            name: openldap-bootstrap
