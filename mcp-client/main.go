@@ -391,6 +391,9 @@ func routeInner(text, cluster string, sess *session) (chatReply, error) {
 		if sess == nil {
 			return signInPrompt(), nil
 		}
+		if strings.Contains(text, "project") {
+			return workTool("list_projects", map[string]any{"token": sess.Token}, "Projects you can see:")
+		}
 		return workTool("list_namespaces", map[string]any{"token": sess.Token}, "Namespaces you can see:")
 	}
 	// "list groups" / "what are all the groups".
