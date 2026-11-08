@@ -22,7 +22,7 @@ async def call_tool(name: str, args: dict) -> str:
 
 def find_cluster(text: str):
     t = text.lower()
-    if "sandbox" in t:
+    if "sandbox" in t or "local" in t or "crc" in t:
         return "sandbox"
     if "production" in t or "prod" in t:
         return "production"
@@ -31,7 +31,7 @@ def find_cluster(text: str):
     return None
 
 
-def route(message: str) -> str:
+def route(message: str):
     text = message.lower()
     cluster = find_cluster(text)
     try:
@@ -41,28 +41,34 @@ def route(message: str) -> str:
                 f"• {c['name']} — {c['description']} ({'ready' if c['configured'] else 'not configured yet'})"
                 for c in data
             ]
-            return "\n".join(lines)
+            return {"reply": "\n".join(lines)}
         if "connect" in text or "log in" in text or "login" in text:
             if not cluster:
-                return "Which cluster — sandbox, dev, or production? Try: 'connect me to sandbox cluster'."
-            data = json.loads(asyncio.run(call_tool("connect_cluster", {"name": cluster})))
-            if data.get("connected"):
-                return (f"Connected to {cluster}. Logged in as {data.get('user')} "
-                        f"at {data.get('server')}. {data.get('openshift', '')} "
-                        f"Node: {data.get('node', '')}")
-            return f"Cannot connect to {cluster} yet: {data.get('reason') or data.get('error')}"
+                return {"reply": "Which cluster — sandbox, dev, or production? Try: 'connect to sandbox'."}
+            data = json.loads(asyncio.run(call_tool("login_url", {"name": cluster})))
+            if data.get("configured"):
+                return {
+                    "reply": (f"Opening the OpenShift login page for {cluster}. "
+                              f"Choose the 'ldap' provider and sign in with your own account "
+                              f"(srinath-admin or srinath-developer, dev password changeme123). "
+                              f"OpenShift will give you exactly your group's permissions. "
+                              f"If the console opens without asking, log out (top-right) first, then log in again and pick 'ldap'."),
+                    "action_url": data["url"],
+                    "action_label": "Open the OpenShift login page",
+                }
+            return {"reply": f"Cannot connect to {cluster} yet: {data.get('reason') or data.get('error')}"}
         if "status" in text or "health" in text:
             target = cluster or "sandbox"
             data = json.loads(asyncio.run(call_tool("cluster_status", {"name": target})))
             if "status" in data:
-                return f"Status of {target}:\n{data['status']}\nProjects visible: {data.get('projects_visible', '?')}"
-            return f"{target}: {data.get('error', 'unknown')}"
-        return ("I can do these today:\n"
+                return {"reply": f"Status of {target}:\n{data['status']}\nProjects visible: {data.get('projects_visible', '?')}"}
+            return {"reply": f"{target}: {data.get('error', 'unknown')}"}
+        return {"reply": ("I can do these today:\n"
                 "• 'list clusters' / 'what are all the clusters'\n"
-                "• 'connect me to sandbox cluster' (dev and production arrive in the org phase)\n"
-                "• 'status of sandbox cluster'")
+                "• 'connect to sandbox' or 'connect to local' — opens the real OpenShift (LDAP) login page\n"
+                "• 'status of sandbox cluster'")}
     except Exception as e:
-        return f"Something went wrong talking to the MCP server: {e}"
+        return {"reply": f"Something went wrong talking to the MCP server: {e}"}
 
 
 HTML = """<!doctype html><html><head><meta charset="utf-8"><title>OpenShift MCP Client</title>
@@ -102,6 +108,7 @@ document.getElementById('f').addEventListener('submit', async e => {
   add(text,'me'); inp.value=''; add('Working on it…','bot'); const pending=document.querySelector('#log .bot:last-child');
   const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text})});
   const data = await r.json(); pending.textContent = data.reply;
+  if (data.action_url){ const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
 });
 loadCards(); add('Hello Srinath. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');
 </script></body></html>"""
@@ -142,7 +149,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         length = int(self.headers.get("Content-Length", "0"))
         payload = json.loads(self.rfile.read(length) or b"{}")
-        self._json({"reply": route(payload.get("message", ""))})
+        self._json(route(payload.get("message", "")))
 
 
 if __name__ == "__main__":

@@ -82,6 +82,33 @@ def connect_cluster(name: str) -> str:
 
 
 @mcp.tool
+def login_url(name: str) -> str:
+    """Return the cluster's real login page (OAuth). The USER logs in there
+    with their LDAP account; OpenShift gives permissions from their group."""
+    key = name.strip().lower()
+    if key == "prod":
+        key = "production"
+    if key in ("local", "crc", "local openshift"):
+        key = "sandbox"
+    info = CLUSTERS.get(key)
+    if info is None:
+        return json.dumps({"error": f"unknown cluster '{name}'"})
+    if not info["configured"]:
+        return json.dumps({
+            "cluster": key,
+            "configured": False,
+            "reason": "This cluster is not configured yet, so it has no login page yet. It arrives in the organization phase.",
+        })
+    return json.dumps({
+        "cluster": key,
+        "configured": True,
+        "url": "https://console-openshift-console.apps-crc.testing",
+        "provider": "ldap",
+        "note": "Log in choosing the 'ldap' provider (e.g. srinath-admin or srinath-developer). Permissions come from your LDAP group: admins = cluster-admin, developers = edit in the dev project only.",
+    })
+
+
+@mcp.tool
 def cluster_status(name: str) -> str:
     """Health/status summary for one cluster."""
     key = name.strip().lower()
