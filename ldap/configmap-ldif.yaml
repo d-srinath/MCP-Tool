@@ -28,15 +28,33 @@ data:
     sn: One
     mail: dev1@platform.local
     userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+    dn: uid=srinath-admin,ou=people,dc=platform,dc=local
+    objectClass: inetOrgPerson
+    uid: srinath-admin
+    cn: Srinath Admin
+    sn: Admin
+    mail: srinath-admin@platform.local
+    userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+    dn: uid=srinath-developer,ou=people,dc=platform,dc=local
+    objectClass: inetOrgPerson
+    uid: srinath-developer
+    cn: Srinath Developer
+    sn: Developer
+    mail: srinath-developer@platform.local
+    userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
   03-groups.ldif: |
     dn: cn=admins,ou=groups,dc=platform,dc=local
     objectClass: groupOfNames
     cn: admins
     description: Platform administrators
     member: uid=srinath,ou=people,dc=platform,dc=local
+    member: uid=srinath-admin,ou=people,dc=platform,dc=local
 
     dn: cn=developers,ou=groups,dc=platform,dc=local
     objectClass: groupOfNames
     cn: developers
     description: Application developers
     member: uid=dev1,ou=people,dc=platform,dc=local
+    member: uid=srinath-developer,ou=people,dc=platform,dc=local

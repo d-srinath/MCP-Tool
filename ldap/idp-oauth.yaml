@@ -1,0 +1,35 @@
+# LDAP identity provider as actually applied to OAuth 'cluster' on CRC
+# (alongside CRC's built-in htpasswd 'developer' provider).
+# Applied 2026-11-08 by merging this provider into spec.identityProviders:
+#   oc create secret generic ldap-bind-secret -n openshift-config \
+#     --from-literal=bindPassword='LdapAdmin@123'
+#   (merge-patch spec.identityProviders = [existing htpasswd entry, entry below])
+# Note: in OpenShift 4 the provider type is "LDAP" with an "ldap" config block.
+identityProviders:
+  - name: ldap
+    mappingMethod: claim
+    type: LDAP
+    ldap:
+      url: "ldap://openldap.ldap.svc.cluster.local:389/ou=people,dc=platform,dc=local?uid?sub?(objectClass=inetOrgPerson)"
+      insecure: true
+      bindDN: "cn=admin,dc=platform,dc=local"
+      bindPassword:
+        name: ldap-bind-secret
+      attributes:
+        id: ["dn"]
+        email: ["mail"]
+        name: ["cn"]
+        preferredUsername: ["uid"]
+
+# Group sync (ldap/sync-config.yaml, run via port-forward) created:
+#   admins     = [srinath, srinath-admin]
+#   developers = [dev1, srinath-developer]
+# RBAC bound after sync:
+#   oc adm policy add-cluster-role-to-group cluster-admin admins
+#   oc new-project dev
+#   oc adm policy add-role-to-group edit developers -n dev
+#
+# Verified 2026-11-08 by oc login tests:
+#   srinath-admin     -> can get nodes (cluster-admin); 71 projects visible
+#   srinath-developer -> can get/create pods in 'dev' only; ldap project and
+#                        nodes DENIED. kubeadmin context restored afterwards.

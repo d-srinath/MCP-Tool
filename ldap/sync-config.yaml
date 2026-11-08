@@ -1,0 +1,25 @@
+# oc adm groups sync config (RFC2307-style, groupOfNames/member).
+# oc runs on the Mac, which cannot resolve cluster service DNS, so sync is run
+# through a port-forward:  oc port-forward -n ldap svc/openldap 10389:389
+# then: oc adm groups sync --sync-config=ldap/sync-config.yaml --confirm
+kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://localhost:10389
+insecure: true
+bindDN: cn=admin,dc=platform,dc=local
+bindPassword: LdapAdmin@123
+rfc2307:
+  groupsQuery:
+    baseDN: "ou=groups,dc=platform,dc=local"
+    scope: sub
+    derefAliases: never
+    filter: "(objectClass=groupOfNames)"
+  groupUIDAttribute: dn
+  groupNameAttributes: [cn]
+  groupMembershipAttributes: [member]
+  usersQuery:
+    baseDN: "ou=people,dc=platform,dc=local"
+    scope: sub
+    derefAliases: never
+  userUIDAttribute: dn
+  userNameAttributes: [uid]

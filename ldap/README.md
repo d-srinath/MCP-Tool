@@ -13,3 +13,11 @@ sync groups, and bind RBAC (admins -> cluster-admin, developers -> edit on dev p
 
 Deploy: `oc apply -f ldap/` then
 `oc adm policy add-scc-to-user anyuid -z default -n ldap` (osixia image runs as root; local POC only).
+
+## Update 2026-11-08 — step 1b done
+Users `srinath-admin` (admins) and `srinath-developer` (developers) added for
+login testing (see add-users.ldif / modify-groups.ldif; bootstrap ConfigMap
+updated to match). LDAP is now an OpenShift OAuth identity provider
+(idp-oauth.yaml), groups are synced (sync-config.yaml), and RBAC is bound:
+admins = cluster-admin, developers = edit on project `dev` only.
+Login tests with both accounts passed with the expected allow/deny results.

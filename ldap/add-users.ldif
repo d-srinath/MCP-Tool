@@ -1,0 +1,15 @@
+dn: uid=srinath-admin,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: srinath-admin
+cn: Srinath Admin
+sn: Admin
+mail: srinath-admin@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=srinath-developer,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: srinath-developer
+cn: Srinath Developer
+sn: Developer
+mail: srinath-developer@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr

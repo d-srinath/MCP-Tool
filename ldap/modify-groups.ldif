@@ -1,0 +1,9 @@
+dn: cn=admins,ou=groups,dc=platform,dc=local
+changetype: modify
+add: member
+member: uid=srinath-admin,ou=people,dc=platform,dc=local
+
+dn: cn=developers,ou=groups,dc=platform,dc=local
+changetype: modify
+add: member
+member: uid=srinath-developer,ou=people,dc=platform,dc=local
