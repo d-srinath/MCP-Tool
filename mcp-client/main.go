@@ -282,7 +282,24 @@ func signInPrompt() chatReply {
 var (
 	reInNamespace  = regexp.MustCompile(`\bin\s+([a-z0-9][a-z0-9\-]*)`)
 	reDeployTarget = regexp.MustCompile(`deployment\s+([a-z0-9][a-z0-9\-.]*)`)
+	rePodsOf       = regexp.MustCompile(`pods?\s+(?:of\s+|for\s+)?(?:deployment\s+)?([a-z0-9][a-z0-9\-.]*)`)
 )
+
+// parsePodsTarget extracts the deployment name from phrasings like
+// "delete pods of app1 in ns", "delete the pods of deployment app1 in
+// ns" or "delete pod app1 in ns", plus the namespace after "in".
+func parsePodsTarget(text string) (name, namespace string) {
+	if m := rePodsOf.FindStringSubmatch(text); m != nil {
+		name = strings.TrimSuffix(m[1], ".")
+		if name == "in" {
+			name = ""
+		}
+	}
+	if m := reInNamespace.FindStringSubmatch(text); m != nil {
+		namespace = m[1]
+	}
+	return name, namespace
+}
 
 func parseDeployTarget(text string) (name, namespace string) {
 	if m := reDeployTarget.FindStringSubmatch(text); m != nil {
@@ -318,32 +335,42 @@ func route(message string, sess *session) chatReply {
 }
 
 func routeInner(text, cluster string, sess *session) (chatReply, error) {
-	// "confirm delete <name> in <namespace>" — the only message that
-	// actually deletes. Checked first and matched exactly.
-	if strings.HasPrefix(text, "confirm delete") {
+	// "delete pods of <deployment> in <namespace>" — deletes the pods
+	// only; the deployment recreates them. (Checked before the
+	// deployment-deletion refusal below, because this phrasing often
+	// contains the word "deployment" too.)
+	if strings.Contains(text, "delete") && strings.Contains(text, "pod") {
 		if sess == nil {
 			return signInPrompt(), nil
 		}
-		name, ns := parseDeployTarget(text)
-		if name == "" || ns == "" {
-			return chatReply{Reply: "I couldn't parse that. Say it like: confirm delete <deployment> in <namespace>"}, nil
+		name, ns := parsePodsTarget(text)
+		if name == "" {
+			return chatReply{Reply: "Which deployment's pods should I delete? Say: delete pods of <deployment> in <namespace>"}, nil
 		}
-		return workTool("delete_deployment", map[string]any{"token": sess.Token, "namespace": ns, "name": name}, "")
+		if ns == "" {
+			return chatReply{Reply: fmt.Sprintf("Which namespace is deployment %s in? Say: delete pods of %s in <namespace>", name, name)}, nil
+		}
+		return workTool("delete_pods", map[string]any{"token": sess.Token, "namespace": ns, "name": name}, "")
 	}
-	// "delete deployment <name> in <namespace>" — ask for confirmation,
-	// never delete immediately.
+	// "delete deployment ..." — refused by design (Srinath, 2026-11-08):
+	// deleting a deployment removes the whole application. The tool
+	// deletes pods only; deployments are never deleted here.
 	if strings.Contains(text, "delete") && strings.Contains(text, "deployment") {
 		if sess == nil {
 			return signInPrompt(), nil
 		}
-		name, ns := parseDeployTarget(text)
-		if name == "" {
-			return chatReply{Reply: "Which deployment should I delete? Say: delete deployment <name> in <namespace>"}, nil
+		return chatReply{Reply: "I don't delete deployments — that would remove the whole application. What I can do is delete a deployment's pods (it recreates them right away). Say: delete pods of <deployment> in <namespace>"}, nil
+	}
+	// "list pods" (optionally "in <namespace>").
+	if strings.Contains(text, "pod") {
+		if sess == nil {
+			return signInPrompt(), nil
 		}
-		if ns == "" {
-			return chatReply{Reply: fmt.Sprintf("Which namespace is deployment %s in? Say: delete deployment %s in <namespace>", name, name)}, nil
+		args := map[string]any{"token": sess.Token}
+		if m := reInNamespace.FindStringSubmatch(text); m != nil {
+			args["namespace"] = m[1]
 		}
-		return chatReply{Reply: fmt.Sprintf("Delete deployment %s in namespace %s? This cannot be undone. Reply: confirm delete %s in %s", name, ns, name, ns)}, nil
+		return workTool("list_pods", args, "Pods:")
 	}
 	// "restart deployment <name> in <namespace>".
 	if strings.Contains(text, "restart") && strings.Contains(text, "deployment") {
@@ -477,7 +504,7 @@ func routeInner(text, cluster string, sess *session) (chatReply, error) {
 		"• 'list clusters' / 'what are all the clusters'\n" +
 		"• 'connect to sandbox' or 'connect to local' — sign in with your OpenShift (LDAP) account\n" +
 		"• once signed in: 'list namespaces', 'list groups', 'list deployments'\n" +
-		"• 'restart deployment <name> in <namespace>' and 'delete deployment <name> in <namespace>'\n" +
+		"• 'restart deployment <name> in <namespace>', 'list pods in <namespace>' and 'delete pods of <name> in <namespace>' (deployments themselves are never deleted)\n" +
 		"• 'status of sandbox cluster'"}, nil
 }
 

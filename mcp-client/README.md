@@ -21,12 +21,15 @@ they are listed only when the user asks (e.g. "list clusters").
    session id in an HttpOnly `paas_session` cookie. The token never
    reaches the browser.
 5. Back in the chat the user issues work commands — "list namespaces",
-   "list groups", "list deployments", "restart deployment X in Y",
-   "delete deployment X in Y". The portal passes the session token to
-   the MCP server's v2 tools, so every action runs with exactly the
-   user's LDAP/RBAC permissions (developer = dev project only,
-   admin = everything). Delete always asks first: only the exact reply
-   "confirm delete <name> in <namespace>" deletes.
+   "list groups", "list deployments", "list pods in Y",
+   "restart deployment X in Y", "delete pods of X in Y". The portal
+   passes the session token to the MCP server's v2 tools, so every
+   action runs with exactly the user's LDAP/RBAC permissions
+   (admin = everything; developers = view in `dev` plus their assigned
+   testing project). Deployments are never deleted by design
+   (Srinath, 2026-11-08) — asking to delete one gets an explanation
+   and the pod-deletion alternative; only pods can be deleted, and
+   the deployment recreates them.
 6. The header shows the signed-in username next to the "MCP Paas Tool"
    badge, with a **Sign out** link (`/auth/logout` — local sign-out
    only; it drops the portal session, not the OpenShift SSO session).
@@ -53,8 +56,10 @@ from, in order:
 - (signed in) `list namespaces`, `list groups`, `list deployments`,
   `list deployments in <namespace>`
 - (signed in) `restart deployment <name> in <namespace>`
-- (signed in) `delete deployment <name> in <namespace>` → then
-  `confirm delete <name> in <namespace>`
+- (signed in) `list pods`, `list pods in <namespace>`
+- (signed in) `delete pods of <name> in <namespace>` (pods only —
+  deployments are never deleted; asking to delete a deployment returns
+  an explanation)
 
 Run (with the MCP server already running on :8000):
   cd mcp-client && go build -o /tmp/paas-portal-client . && /tmp/paas-portal-client &

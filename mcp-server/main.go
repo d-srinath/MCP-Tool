@@ -7,8 +7,9 @@
 //
 // v1 tools (list_clusters, connect_cluster, cluster_status, login_url)
 // keep their original behavior and JSON outputs. v2 adds work tools
-// (list_namespaces, list_groups, list_deployments, restart_deployment,
-// delete_deployment) that call the OpenShift API with the signed-in
+// (list_namespaces, list_groups, list_deployments, list_pods,
+// restart_deployment, delete_pods) that call the OpenShift API with the
+// signed-in
 // USER'S OWN bearer token, so LDAP group / RBAC permissions apply
 // exactly to everything they do.
 package main
@@ -21,7 +22,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -468,25 +471,159 @@ func restartDeployment(ctx context.Context, req *mcp.CallToolRequest, args deplo
 	}
 }
 
-func deleteDeployment(ctx context.Context, req *mcp.CallToolRequest, args deploymentArgs) (*mcp.CallToolResult, any, error) {
+// NOTE (Srinath, 2026-11-08): there is deliberately NO delete_deployment
+// tool. Deleting a deployment removes the whole application — too
+// powerful for this tool. The destructive action offered instead is
+// delete_pods: pods are recreated by their deployment automatically.
+
+type podList struct {
+	Items []struct {
+		Metadata struct {
+			Name   string            `json:"name"`
+			Labels map[string]string `json:"labels"`
+		} `json:"metadata"`
+		Status struct {
+			Phase string `json:"phase"`
+		} `json:"status"`
+	} `json:"items"`
+}
+
+func fetchPods(token, ns string) ([]string, int, string) {
+	code, body, err := apiCall(http.MethodGet, fmt.Sprintf("/api/v1/namespaces/%s/pods", ns), token, nil, "")
+	if err != nil {
+		return nil, 0, err.Error()
+	}
+	if code != http.StatusOK {
+		return nil, code, statusMessage(body)
+	}
+	var pl podList
+	if err := json.Unmarshal(body, &pl); err != nil {
+		return nil, code, "could not parse the pod list: " + err.Error()
+	}
+	var lines []string
+	for _, p := range pl.Items {
+		line := fmt.Sprintf("%s/%s — %s", ns, p.Metadata.Name, p.Status.Phase)
+		if app := p.Metadata.Labels["app"]; app != "" {
+			line += fmt.Sprintf(" (deployment %s)", app)
+		}
+		lines = append(lines, line)
+	}
+	return lines, code, ""
+}
+
+type listPodsArgs struct {
+	Token     string `json:"token"`
+	Namespace string `json:"namespace"`
+}
+
+func listPods(ctx context.Context, req *mcp.CallToolRequest, args listPodsArgs) (*mcp.CallToolResult, any, error) {
 	if msg := needToken(args.Token); msg != "" {
 		return plainTextResult(msg)
 	}
-	path := fmt.Sprintf("/apis/apps/v1/namespaces/%s/deployments/%s", args.Namespace, args.Name)
-	code, body, err := apiCall(http.MethodDelete, path, args.Token, nil, "")
+	if ns := strings.TrimSpace(args.Namespace); ns != "" {
+		lines, code, msg := fetchPods(args.Token, ns)
+		switch {
+		case code == http.StatusForbidden:
+			return plainTextResult(fmt.Sprintf("Not allowed: your account cannot list pods in namespace '%s'.", ns))
+		case code == http.StatusNotFound:
+			return plainTextResult(fmt.Sprintf("Namespace '%s' was not found (or is not visible to your account).", ns))
+		case code != http.StatusOK:
+			return plainTextResult(fmt.Sprintf("Could not list pods in namespace '%s' (HTTP %d): %s", ns, code, msg))
+		case len(lines) == 0:
+			return plainTextResult(fmt.Sprintf("No pods in namespace '%s'.", ns))
+		}
+		return plainTextResult(strings.Join(lines, "\n"))
+	}
+	projects, code, msg := fetchProjects(args.Token)
+	if code != http.StatusOK {
+		return plainTextResult(fmt.Sprintf("Could not list namespaces (HTTP %d): %s", code, msg))
+	}
+	var all []string
+	for _, ns := range projects {
+		lines, pcode, _ := fetchPods(args.Token, ns)
+		if pcode != http.StatusOK {
+			continue
+		}
+		all = append(all, lines...)
+	}
+	if len(all) == 0 {
+		return plainTextResult("No pods found in any namespace you can see.")
+	}
+	return plainTextResult(strings.Join(all, "\n"))
+}
+
+type deletePodsArgs struct {
+	Token     string `json:"token"`
+	Namespace string `json:"namespace"`
+	Name      string `json:"name"`
+}
+
+// deletePods deletes every pod of one deployment. The deployment itself
+// is NOT touched — it recreates the pods right away.
+func deletePods(ctx context.Context, req *mcp.CallToolRequest, args deletePodsArgs) (*mcp.CallToolResult, any, error) {
+	if msg := needToken(args.Token); msg != "" {
+		return plainTextResult(msg)
+	}
+	// Get the deployment only to read its pod selector labels.
+	dpath := fmt.Sprintf("/apis/apps/v1/namespaces/%s/deployments/%s", args.Namespace, args.Name)
+	code, body, err := apiCall(http.MethodGet, dpath, args.Token, nil, "")
 	if err != nil {
 		return plainTextResult("Could not reach the cluster API: " + err.Error())
 	}
 	switch code {
-	case http.StatusOK:
-		return plainTextResult(fmt.Sprintf("Deleted deployment %s/%s.", args.Namespace, args.Name))
 	case http.StatusForbidden:
-		return plainTextResult(fmt.Sprintf("Not allowed: your account cannot delete deployment %s/%s (needs edit permissions in that namespace). %s", args.Namespace, args.Name, statusMessage(body)))
+		return plainTextResult(fmt.Sprintf("Not allowed: your account cannot see deployment %s/%s.", args.Namespace, args.Name))
 	case http.StatusNotFound:
 		return plainTextResult(fmt.Sprintf("Not found: deployment %s/%s does not exist.", args.Namespace, args.Name))
+	case http.StatusOK:
 	default:
-		return plainTextResult(fmt.Sprintf("Could not delete deployment %s/%s (HTTP %d): %s", args.Namespace, args.Name, code, statusMessage(body)))
+		return plainTextResult(fmt.Sprintf("Could not read deployment %s/%s (HTTP %d): %s", args.Namespace, args.Name, code, statusMessage(body)))
 	}
+	var dep struct {
+		Spec struct {
+			Selector struct {
+				MatchLabels map[string]string `json:"matchLabels"`
+			} `json:"selector"`
+		} `json:"spec"`
+	}
+	if err := json.Unmarshal(body, &dep); err != nil || len(dep.Spec.Selector.MatchLabels) == 0 {
+		return plainTextResult(fmt.Sprintf("Could not read the pod selector of deployment %s/%s.", args.Namespace, args.Name))
+	}
+	var pairs []string
+	for k, v := range dep.Spec.Selector.MatchLabels {
+		pairs = append(pairs, k+"="+v)
+	}
+	sort.Strings(pairs)
+	sel := url.QueryEscape(strings.Join(pairs, ","))
+	code, body, err = apiCall(http.MethodGet, fmt.Sprintf("/api/v1/namespaces/%s/pods?labelSelector=%s", args.Namespace, sel), args.Token, nil, "")
+	if err != nil {
+		return plainTextResult("Could not reach the cluster API: " + err.Error())
+	}
+	if code != http.StatusOK {
+		return plainTextResult(fmt.Sprintf("Could not list the pods of %s/%s (HTTP %d): %s", args.Namespace, args.Name, code, statusMessage(body)))
+	}
+	var pl podList
+	if err := json.Unmarshal(body, &pl); err != nil {
+		return plainTextResult("Could not parse the pod list: " + err.Error())
+	}
+	if len(pl.Items) == 0 {
+		return plainTextResult(fmt.Sprintf("Deployment %s/%s has no pods right now.", args.Namespace, args.Name))
+	}
+	deleted := 0
+	for _, p := range pl.Items {
+		dcode, dbody, derr := apiCall(http.MethodDelete, fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", args.Namespace, p.Metadata.Name), args.Token, nil, "")
+		if derr != nil {
+			return plainTextResult("Could not reach the cluster API: " + derr.Error())
+		}
+		if dcode == http.StatusForbidden {
+			return plainTextResult(fmt.Sprintf("Not allowed: your account cannot delete pods in namespace '%s' (needs edit permissions there). %s", args.Namespace, statusMessage(dbody)))
+		}
+		if dcode != http.StatusOK {
+			return plainTextResult(fmt.Sprintf("Could not delete pod %s (HTTP %d): %s", p.Metadata.Name, dcode, statusMessage(dbody)))
+		}
+		deleted++
+	}
+	return plainTextResult(fmt.Sprintf("Deleted %d pod(s) of deployment %s/%s. The deployment itself is untouched and will recreate the pods.", deleted, args.Namespace, args.Name))
 }
 
 func main() {
@@ -499,7 +636,8 @@ func main() {
 	mcp.AddTool(server, &mcp.Tool{Name: "list_groups", Description: "List OpenShift groups and their users, using the signed-in user's token. Listing groups needs cluster permissions; a clear 'not allowed' text is returned otherwise."}, listGroups)
 	mcp.AddTool(server, &mcp.Tool{Name: "list_deployments", Description: "List deployments ('<namespace>/<name> — <ready>/<replicas> ready') using the signed-in user's token. With no namespace, lists deployments across all namespaces the user can see."}, listDeployments)
 	mcp.AddTool(server, &mcp.Tool{Name: "restart_deployment", Description: "Restart a deployment (rollout restart via the kubectl.kubernetes.io/restartedAt annotation) using the signed-in user's token; the user's edit permissions in that namespace decide if it works."}, restartDeployment)
-	mcp.AddTool(server, &mcp.Tool{Name: "delete_deployment", Description: "Delete a deployment using the signed-in user's token; the user's edit permissions in that namespace decide if it works."}, deleteDeployment)
+	mcp.AddTool(server, &mcp.Tool{Name: "list_pods", Description: "List pods (in one namespace, or across all namespaces the user can see) using the signed-in user's token."}, listPods)
+	mcp.AddTool(server, &mcp.Tool{Name: "delete_pods", Description: "Delete all pods of one deployment using the signed-in user's token. The deployment itself is NOT deleted; it recreates the pods. Needs the user's delete permission on pods in that namespace. There is intentionally no deployment-deletion tool."}, deletePods)
 
 	handler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server { return server }, nil)
 	mux := http.NewServeMux()

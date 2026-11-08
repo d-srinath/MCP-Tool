@@ -42,7 +42,13 @@ so the user's LDAP group / RBAC permissions decide everything:
 - `restart_deployment(token, namespace, name)` — rollout restart via
   the `kubectl.kubernetes.io/restartedAt` annotation (strategic merge
   patch).
-- `delete_deployment(token, namespace, name)` — deletes the deployment.
+- `list_pods(token, namespace?)` — pod name/phase lines; with no
+  namespace, across all namespaces the user can see.
+- `delete_pods(token, namespace, name)` — deletes all pods of the named
+  deployment. The deployment itself is NOT deleted (it recreates the
+  pods). There is deliberately **no** `delete_deployment` tool
+  (Srinath, 2026-11-08): deleting a deployment removes the whole
+  application — too powerful for this tool.
 
 403/404 responses become clear "Not allowed: ..." / "Not found: ..."
 texts including the API's own Status message where present.
