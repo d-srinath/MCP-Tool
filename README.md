@@ -9,8 +9,11 @@ MacBook over Tailscale + SSH and runs `oc` on the Mac, because
 the same code and manifests are taken to the organization cluster.
 
 ## Languages
-- **Go** — primary language for deployable apps / cluster tooling (planned next app).
-- **Python** — automation scripts (`scripts/`), already available on the Mac.
+- **Go** — primary language for deployable apps / cluster tooling. The MCP
+  server (`mcp-server/`) and the Paas Portal MCP client (`mcp-client/`) are
+  Go (official Go MCP SDK), rewritten from the Python prototype on
+  2026-11-08.
+- **Python** — automation scripts (`scripts/`) only, already available on the Mac.
 
 ## What is here
 - `app/index.html` — the POC web page (source of the ConfigMap content).
