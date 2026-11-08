@@ -1,0 +1,14 @@
+# Replace group membership with the test users (2026-11-08).
+dn: cn=admins,ou=groups,dc=platform,dc=local
+changetype: modify
+replace: member
+member: uid=testadmin1,ou=people,dc=platform,dc=local
+member: uid=testadmin2,ou=people,dc=platform,dc=local
+member: uid=testadmin3,ou=people,dc=platform,dc=local
+
+dn: cn=developers,ou=groups,dc=platform,dc=local
+changetype: modify
+replace: member
+member: uid=testdeveloper1,ou=people,dc=platform,dc=local
+member: uid=testdeveloper2,ou=people,dc=platform,dc=local
+member: uid=testdeveloper3,ou=people,dc=platform,dc=local

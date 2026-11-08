@@ -1,0 +1,50 @@
+# Test users (added 2026-11-08 at Srinath's direction — generic org-style
+# accounts, no personal names). All use the local throwaway password
+# changeme123 (same SSHA hash as before; local POC only).
+dn: uid=testadmin1,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testadmin1
+cn: Test Admin 1
+sn: Admin
+mail: testadmin1@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=testadmin2,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testadmin2
+cn: Test Admin 2
+sn: Admin
+mail: testadmin2@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=testadmin3,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testadmin3
+cn: Test Admin 3
+sn: Admin
+mail: testadmin3@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=testdeveloper1,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testdeveloper1
+cn: Test Developer 1
+sn: Developer
+mail: testdeveloper1@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=testdeveloper2,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testdeveloper2
+cn: Test Developer 2
+sn: Developer
+mail: testdeveloper2@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr
+
+dn: uid=testdeveloper3,ou=people,dc=platform,dc=local
+objectClass: inetOrgPerson
+uid: testdeveloper3
+cn: Test Developer 3
+sn: Developer
+mail: testdeveloper3@platform.local
+userPassword: {SSHA}PHXLT9mWuMpU9HDogtW8XJoax4Yn0HHr

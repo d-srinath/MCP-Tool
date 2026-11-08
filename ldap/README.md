@@ -5,7 +5,7 @@ Lightweight OpenLDAP on the CRC cluster = step 1 of docs/platform-plan.md.
 - Base DN: `dc=platform,dc=local`
 - Admin bind: `cn=admin,dc=platform,dc=local` (password in Secret `openldap-admin`, namespace `ldap`)
 - OUs: `ou=people`, `ou=groups`
-- Users: `srinath` (in admins), `dev1` (in developers). Dev password for both: `changeme123` (SSHA-hashed in the LDIF; local throwaway only)
+- Users: `testadmin1..3` (in admins), `testdeveloper1..3` (in developers). Password for all: `changeme123` (SSHA-hashed in the LDIF; local throwaway only)
 - Groups: `admins`, `developers` (groupOfNames, `member` attribute — the shape OpenShift LDAP group sync expects)
 
 Next half of step 1: add LDAP as an OpenShift OAuth identity provider,
@@ -15,9 +15,17 @@ Deploy: `oc apply -f ldap/` then
 `oc adm policy add-scc-to-user anyuid -z default -n ldap` (osixia image runs as root; local POC only).
 
 ## Update 2026-11-08 — step 1b done
-Users `srinath-admin` (admins) and `srinath-developer` (developers) added for
-login testing (see add-users.ldif / modify-groups.ldif; bootstrap ConfigMap
-updated to match). LDAP is now an OpenShift OAuth identity provider
-(idp-oauth.yaml), groups are synced (sync-config.yaml), and RBAC is bound:
-admins = cluster-admin, developers = edit on project `dev` only.
-Login tests with both accounts passed with the expected allow/deny results.
+LDAP is an OpenShift OAuth identity provider (idp-oauth.yaml), groups are
+synced (sync-config.yaml), and RBAC is bound: admins = cluster-admin,
+developers = edit on project `dev` only.
+
+## Update 2026-11-08 — generic test users replace personal accounts
+Browser LDAP login was proven end to end in a clean (incognito) browser
+context: choosing the `ldap` provider and logging in lands in the restricted
+developer view. All personal-named accounts (`srinath`, `srinath-admin`,
+`srinath-developer`, `dev1`) were then DELETED from LDAP and from OpenShift,
+and replaced with generic org-style test accounts (test-users.ldif /
+test-groups.ldif; bootstrap ConfigMap updated to match): testadmin1..3 in
+admins, testdeveloper1..3 in developers. Group sync re-run; CLI login tests:
+testdeveloper1 sees only project `dev` and is Forbidden from nodes,
+testadmin1 sees the node Ready.
