@@ -108,7 +108,7 @@ document.getElementById('f').addEventListener('submit', async e => {
   add(text,'me'); inp.value=''; add('Working on it…','bot'); const pending=document.querySelector('#log .bot:last-child');
   const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text})});
   const data = await r.json(); pending.textContent = data.reply;
-  if (data.action_url){ const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
+  if (data.action_url){ window.open(data.action_url, '_blank'); const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
 });
 loadCards(); add('Hello Srinath. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');
 </script></body></html>"""

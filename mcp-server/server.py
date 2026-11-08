@@ -102,7 +102,7 @@ def login_url(name: str) -> str:
     return json.dumps({
         "cluster": key,
         "configured": True,
-        "url": "https://console-openshift-console.apps-crc.testing",
+        "url": "https://oauth-openshift.apps-crc.testing/oauth/authorize?client_id=console&response_type=code&scope=user:full&redirect_uri=https%3A%2F%2Fconsole-openshift-console.apps-crc.testing%2Fauth%2Fcallback",
         "provider": "ldap",
         "note": "Log in choosing the 'ldap' provider (e.g. srinath-admin or srinath-developer). Permissions come from your LDAP group: admins = cluster-admin, developers = edit in the dev project only.",
     })
