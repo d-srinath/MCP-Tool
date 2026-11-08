@@ -27,7 +27,9 @@ identityProviders:
 # RBAC bound after sync:
 #   oc adm policy add-cluster-role-to-group cluster-admin admins
 #   oc new-project dev
-#   oc adm policy add-role-to-group edit developers -n dev
+#   oc adm policy add-role-to-group view developers -n dev
+# (developers were briefly bound to edit; changed to view on 2026-11-08
+# at Srinath's direction: admin = everything, developer = view only.)
 #
 # Verified 2026-11-08 by oc login tests:
 #   srinath-admin     -> can get nodes (cluster-admin); 71 projects visible

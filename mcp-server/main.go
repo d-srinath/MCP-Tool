@@ -177,7 +177,7 @@ func loginURL(ctx context.Context, req *mcp.CallToolRequest, args nameArgs) (*mc
 		Configured: true,
 		URL:        "https://console-openshift-console.apps-crc.testing",
 		Provider:   "ldap",
-		Note:       "Log in choosing the 'ldap' provider (e.g. srinath-admin or srinath-developer). Permissions come from your LDAP group: admins = cluster-admin, developers = edit in the dev project only.",
+		Note:       "Log in choosing the 'ldap' provider (e.g. testadmin1 or testdeveloper1). Permissions come from your LDAP group: admins = cluster-admin (everything), developers = view in the dev project only.",
 	})
 }
 
