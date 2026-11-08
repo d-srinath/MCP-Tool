@@ -27,7 +27,7 @@ they are listed only when the user asks (e.g. "list clusters").
    action runs with exactly the user's LDAP/RBAC permissions
    (admin = everything; developers = view in `dev` plus their assigned
    testing project). Deployments are never deleted by design
-   (Srinath, 2026-11-08) — asking to delete one gets an explanation
+   (2026-11-08) — asking to delete one gets an explanation
    and the pod-deletion alternative; only pods can be deleted, and
    the deployment recreates them.
 6. The header shows the signed-in username next to the "MCP Paas Tool"

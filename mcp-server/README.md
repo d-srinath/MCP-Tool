@@ -1,6 +1,6 @@
 # MCP server + client — Go
 
-Rewritten in Go (2026-11-08) at Srinath's direction — Go is the language
+Rewritten in Go (2026-11-08) by project decision — Go is the language
 for app/cluster tooling in this repo; the original Python/FastMCP version
 was a prototype shortcut and has been removed. Both programs use the
 official Go MCP SDK (github.com/modelcontextprotocol/go-sdk).
@@ -47,7 +47,7 @@ so the user's LDAP group / RBAC permissions decide everything:
 - `delete_pods(token, namespace, name)` — deletes all pods of the named
   deployment. The deployment itself is NOT deleted (it recreates the
   pods). There is deliberately **no** `delete_deployment` tool
-  (Srinath, 2026-11-08): deleting a deployment removes the whole
+  (2026-11-08): deleting a deployment removes the whole
   application — too powerful for this tool.
 
 403/404 responses become clear "Not allowed: ..." / "Not found: ..."

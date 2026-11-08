@@ -1,7 +1,7 @@
 // OpenShift MCP server (v2) — Go implementation.
 //
 // Exposes cluster tools over MCP (streamable HTTP on 127.0.0.1:8000/mcp).
-// Runs ON Srinath's Mac, where the local CRC cluster (sandbox) resolves.
+// Runs on the local Mac, where the local CRC cluster (sandbox) resolves.
 // Clusters 'dev' and 'production' are declared but not configured yet --
 // they arrive in the organization phase. Tools answer honestly about that.
 //
@@ -471,7 +471,7 @@ func restartDeployment(ctx context.Context, req *mcp.CallToolRequest, args deplo
 	}
 }
 
-// NOTE (Srinath, 2026-11-08): there is deliberately NO delete_deployment
+// NOTE (2026-11-08): there is deliberately NO delete_deployment
 // tool. Deleting a deployment removes the whole application — too
 // powerful for this tool. The destructive action offered instead is
 // delete_pods: pods are recreated by their deployment automatically.

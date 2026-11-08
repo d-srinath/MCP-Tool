@@ -22,16 +22,16 @@ identityProviders:
         preferredUsername: ["uid"]
 
 # Group sync (ldap/sync-config.yaml, run via port-forward) created:
-#   admins     = [srinath, srinath-admin]
-#   developers = [dev1, srinath-developer]
+#   admins     = [testadmin1..3]
+#   developers = [testdeveloper1..3]
 # RBAC bound after sync:
 #   oc adm policy add-cluster-role-to-group cluster-admin admins
 #   oc new-project dev
 #   oc adm policy add-role-to-group view developers -n dev
 # (developers were briefly bound to edit; changed to view on 2026-11-08
-# at Srinath's direction: admin = everything, developer = view only.)
+# by project decision: admin = everything, developer = view only.)
 #
 # Verified 2026-11-08 by oc login tests:
-#   srinath-admin     -> can get nodes (cluster-admin); 71 projects visible
-#   srinath-developer -> can get/create pods in 'dev' only; ldap project and
+#   testadmin1        -> can get nodes (cluster-admin); 71 projects visible
+#   testdeveloper1    -> can get/create pods in 'dev' only; ldap project and
 #                        nodes DENIED. kubeadmin context restored afterwards.

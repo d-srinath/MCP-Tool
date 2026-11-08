@@ -1,6 +1,6 @@
 # OpenShift POC — local first, then organization
 
-Owner: Srinath Damacharla. Built/tested by Muse on Srinath's MacBook CRC cluster.
+Built and tested by Muse on a local MacBook CRC cluster.
 
 ## Purpose
 Prove the workflow locally on OpenShift Local (CRC) first — Muse accesses the
@@ -36,7 +36,7 @@ python3 scripts/deploy.py
 ```
 
 ## Rules
-- Every code/manifest update is committed here and pushed to Srinath's GitLab
+- Every code/manifest update is committed here and pushed to the project GitLab
   (standing instruction, 2026-11-07).
 - MacBook must be awake with the lid open and Tailscale connected for Muse to reach it.
-- Org phase: no kubeadmin — use Srinath's org user and a non-prod namespace.
+- Org phase: no kubeadmin — use the org user account and a non-prod namespace.

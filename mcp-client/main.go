@@ -12,7 +12,7 @@
 // user asks for in chat runs with exactly their LDAP/RBAC permissions:
 // a developer sees only the dev project, an admin sees everything.
 //
-// Branding per Srinath (2026-11-08): the page is the "Paas Portal" —
+// Branding (2026-11-08): the page is the "Paas Portal" —
 // heading "Welcome to Paas Portal", and the environments are NOT
 // displayed upfront; they are listed only when asked (e.g. "list
 // clusters").
@@ -352,7 +352,7 @@ func routeInner(text, cluster string, sess *session) (chatReply, error) {
 		}
 		return workTool("delete_pods", map[string]any{"token": sess.Token, "namespace": ns, "name": name}, "")
 	}
-	// "delete deployment ..." — refused by design (Srinath, 2026-11-08):
+	// "delete deployment ..." — refused by design (2026-11-08):
 	// deleting a deployment removes the whole application. The tool
 	// deletes pods only; deployments are never deleted here.
 	if strings.Contains(text, "delete") && strings.Contains(text, "deployment") {
@@ -540,7 +540,7 @@ document.getElementById('f').addEventListener('submit', async e => {
   const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:text})});
   const data = await r.json(); pending.textContent = data.reply;
   // Action = a button the user clicks (e.g. 'Sign in to sandbox'). Never
-  // auto-open it: navigation happens only on the click (Srinath, 2026-11-08).
+  // auto-open it: navigation happens only on the click (2026-11-08).
   if (data.action_url){ const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
 });
 add('Hello! Welcome to Paas Portal. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');

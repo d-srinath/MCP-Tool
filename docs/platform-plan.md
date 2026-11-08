@@ -1,4 +1,4 @@
-# Local OpenShift Platform — A-to-Z Plan (Srinath)
+# Local OpenShift Platform — A-to-Z Plan
 
 Goal: replicate a real enterprise OpenShift workflow on the local CRC cluster first,
 prove it end to end, then take the same pattern to the organization.
@@ -14,7 +14,7 @@ detects the Git change and deploys/syncs it into OpenShift -> LDAP groups
 
 ### Done
 1. CRC cluster (OpenShift 4.21.8) + oc + kubeadmin — Muse access via Tailscale + SSH. DONE
-2. GitLab project (srinathdamacharla/openshift-poc) + SSH key. DONE
+2. GitLab project (openshift-poc) + SSH key. DONE
 
 ### To set up, in order
 3. Identity — OpenLDAP server (lightweight, running on the cluster):
@@ -31,7 +31,7 @@ detects the Git change and deploys/syncs it into OpenShift -> LDAP groups
    repo and commit. That commit is what Argo CD deploys. Jenkins builds,
    Argo CD deploys — Jenkins does not deploy directly.
    (Note: OpenShift Pipelines/Tekton is the native alternative; we use Jenkins
-   because that is the tool in Srinath's real workflow.)
+   because that is the tool in the real day-to-day workflow.)
 8. MCP server (Python + FastMCP, runs on the Mac — Mac needs Python 3.12 via uv;
    system Python is 3.9): tools for an AI to operate the stack —
    list/get projects & pods, read logs, rollout status, scale,

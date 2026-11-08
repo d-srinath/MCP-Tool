@@ -1,12 +1,12 @@
 apiVersion: v1
 data:
   index.html: |
-    <!doctype html><html><head><title>Muse POC</title></head><body><h1>Muse OpenShift POC works</h1><p>Deployed by Muse via SSH on Srinath MacBook CRC cluster.</p></body></html>
+    <!doctype html><html><head><title>Muse POC</title></head><body><h1>Muse OpenShift POC works</h1><p>Deployed by Muse via SSH on a local MacBook CRC cluster.</p></body></html>
 kind: ConfigMap
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","data":{"index.html":"\u003c!doctype html\u003e\u003chtml\u003e\u003chead\u003e\u003ctitle\u003eMuse POC\u003c/title\u003e\u003c/head\u003e\u003cbody\u003e\u003ch1\u003eMuse OpenShift POC works\u003c/h1\u003e\u003cp\u003eDeployed by Muse via SSH on Srinath MacBook CRC cluster.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"poc-web-content","namespace":"muse-poc"}}
+      {"apiVersion":"v1","data":{"index.html":"\u003c!doctype html\u003e\u003chtml\u003e\u003chead\u003e\u003ctitle\u003eMuse POC\u003c/title\u003e\u003c/head\u003e\u003cbody\u003e\u003ch1\u003eMuse OpenShift POC works\u003c/h1\u003e\u003cp\u003eDeployed by Muse via SSH on a local MacBook CRC cluster.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"poc-web-content","namespace":"muse-poc"}}
   creationTimestamp: "2026-11-07T18:21:24Z"
   name: poc-web-content
   namespace: muse-poc

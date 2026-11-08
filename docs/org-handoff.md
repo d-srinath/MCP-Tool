@@ -90,8 +90,7 @@ In `mcp-server/main.go`:
   per-cluster table.
 - Portal sessions are in-memory: restarting the portal signs everyone
   out. Fine for a pilot; add a session store for production.
-- By design there is **no deployment-deletion tool** (Srinath,
-  2026-11-08). The destructive action offered is deleting pods, which
+- By design there is **no deployment-deletion tool** (2026-11-08). The destructive action offered is deleting pods, which
   the deployment recreates. Tools: list_clusters, connect_cluster,
   login_url, cluster_status, list_namespaces, list_projects,
   list_groups, list_deployments, list_pods, restart_deployment,

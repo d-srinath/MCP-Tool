@@ -1,4 +1,4 @@
-# Test users (added 2026-11-08 at Srinath's direction — generic org-style
+# Test users (added 2026-11-08 by project decision — generic org-style
 # accounts, no personal names). All use the local throwaway password
 # changeme123 (same SSHA hash as before; local POC only).
 dn: uid=testadmin1,ou=people,dc=platform,dc=local

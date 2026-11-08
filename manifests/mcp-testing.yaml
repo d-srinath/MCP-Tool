@@ -1,4 +1,4 @@
-# MCP permission-testing projects (created 2026-11-08 at Srinath's request).
+# MCP permission-testing projects (created 2026-11-08 for this project).
 # Three projects, three sample apps each, two replicas per app — used to
 # test admin vs developer visibility/actions through the Paas Portal:
 #   admin (cluster-admin) sees and can act in all projects;
