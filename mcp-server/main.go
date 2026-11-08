@@ -29,7 +29,7 @@ type clusterInfo struct {
 }
 
 var clusterList = []clusterInfo{
-	{Name: "sandbox", Description: "Local OpenShift CRC cluster on Srinath's MacBook", Kind: "local-crc", Configured: true},
+	{Name: "sandbox", Description: "Local OpenShift CRC cluster on this machine", Kind: "local-crc", Configured: true},
 	{Name: "dev", Description: "Organization dev cluster (not connected yet)", Kind: "organization", Configured: false},
 	{Name: "production", Description: "Organization production cluster (not connected yet)", Kind: "organization", Configured: false},
 }

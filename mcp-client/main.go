@@ -207,7 +207,7 @@ document.getElementById('f').addEventListener('submit', async e => {
   const data = await r.json(); pending.textContent = data.reply;
   if (data.action_url){ window.open(data.action_url, '_blank'); const a=document.createElement('a'); a.href=data.action_url; a.target='_blank'; a.textContent=data.action_label||'Open'; a.style.cssText='display:inline-block;margin-top:8px;padding:8px 14px;background:#c00;color:#fff;border-radius:8px;text-decoration:none'; pending.appendChild(document.createElement('br')); pending.appendChild(a); }
 });
-add('Hello Srinath. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');
+add('Hello! Welcome to Paas Portal. Ask me to list the clusters, or say: connect me to sandbox cluster.','bot');
 </script></body></html>`
 
 func writeJSON(w http.ResponseWriter, code int, v any) {
