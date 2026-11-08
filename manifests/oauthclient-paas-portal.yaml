@@ -1,0 +1,21 @@
+# OAuthClient for the Paas Portal (mcp-client/).
+#
+# The portal's "Sign in to sandbox" link starts an OpenShift OAuth flow
+# against this client: the user logs in on the real OpenShift login page
+# (choosing the 'ldap' provider), and the portal receives the user's OWN
+# access token, which it then passes to the MCP server tools so every
+# action runs with exactly that user's LDAP/RBAC permissions.
+#
+# The secret below is a PLACEHOLDER. The real secret is generated on the
+# cluster at install time and stored OUTSIDE git — the portal reads it
+# from the PAAS_OAUTH_SECRET environment variable or from
+# ~/.paas-portal/oauth-secret on the machine running the portal.
+# Never commit the real secret.
+apiVersion: oauth.openshift.io/v1
+kind: OAuthClient
+metadata:
+  name: paas-portal
+secret: "REPLACE-WITH-GENERATED-SECRET"
+grantMethod: auto
+redirectURIs:
+  - "http://localhost:8090/auth/callback"
